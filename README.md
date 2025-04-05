@@ -1,21 +1,28 @@
-# Building more effective user embeddings with Metapath2vec
+# MP2V-4-Rec: Scalable Graph-Based Recommendation Systems
 
-This repository explores how we can build user embeddings in a more effective way than is currently done in production at SoundCloud. Currently, Word2Vec is trained on listening histories for each user which gives us an embedding per SoundCloud track. These embeddings are used downstream for various tasks. For example Autoplay (Non-personalized recommendation) takes a given track a user just interacted with and recommends the top k most similar songs in embeddings space (KNN). Curated playlists are created by using the average of a users listened to tracks as a user embeddings, and then we find the k most similar tracks to the user's embedding. This is a very computationally easy solution, but my hypothesis is that using a simple weighted average loses a lot of rich information that could be stored in the user embedding.
+## Project Summary
+This project explores scalable graph-based representation learning for personalized recommendations on large-scale streaming platforms, focusing on SoundCloud and Kuaishou (KuaiRec dataset). Traditional methods like Word2Vec often fail to capture complex user-content and social interactions. We introduce **Metapath2Vec (MP2V)** to recommendation research, extending it with weighted random walks (R-MP2V) to account for interaction quality. Leveraging SoundCloud’s production-scale data—9 million users, 13 million tracks, and over 21 million social connections—and the reproducible KuaiRec dataset, we compare MP2V and R-MP2V against baselines and state-of-the-art methods like UltraGCN. Ablation studies on KuaiRec evaluate social relationships, embedding initialization, and metapath sampling. MP2V delivers competitive performance, is highly scalable, and is being deployed at SoundCloud for playlist curation and personalization. This marks the first application of MP2V in a production-scale music recommender system, offering practical insights for real-world streaming applications.
 
-In this notebook we introduce [Metapath2Vec](https://ericdongyx.github.io/papers/KDD17-dong-chawla-swami-metapath2vec.pdf) as an alternative to creating the user embeddings. Metapath2Vec is a scalable heterogeneous graph method which uses metapath based random walk sampling to create neighborhood sequences for each node in the graph, which are then fed to W2V, resulting in embeddings for each node in the same space which are low-dimensional representations of their neighborhood. It is expected that the new track/video embeddings would not perform any better than the original Word2Vec embeddings, but for personalized recommendation using user embeddings, it could work better than the average because we are explicitly learning these embeddings.
+## Key Figures
+Below are selected visualizations from the results:
 
-We also attempt freezing the track/video embeddings to those learned by W2V, and only allowing the user embeddings to adapt, but the performance went to 0 indicating that metapath2vec requires all embeddings to be changed in order to output high quality predictions.
+- **SoundCloud PCA Embeddings**: Comparing W2V and MP2V embedding spaces on SoundCloud (9M users, 13M tracks).
+  ![SoundCloud PCA Embeddings](results/SoundCloud/pca_embeddings.png)
 
+- **KuaiRec PCA Embeddings**: Visualizing W2V and MP2V embeddings on KuaiRec.
+  ![KuaiRec PCA Embeddings](results/KuaiRec/pca_embeddings.png)
 
-## Dataset
-As a proof of concept we use the open source dataset [KuaiRec](https://kuairec.com/), which provides us with data similar to SoundClouds. We are provided video streaming interaction data for approx. 7000 users across approx. 10000 videos, as well as a social follows graph between users. We are also given a fully observed test set which allows us to be confident in the performance of any systems trained (removes the conterfactual problem in recommendations)
+- **SoundCloud Diversity Histogram**: Diversity distribution (1 - avg cosine similarity) of top-100 recommendations for 200,000 users.
+  ![SoundCloud Diversity Histogram](results/SoundCloud/diversity_histogram.png)
 
-To run this notebook, please download the KuaiRec dataset from the above site, unzip it into this directory, so you have a repository structure similar to:
+- **SoundCloud Feature Diversity**: Unique artists and genres in top-100 recommendations.
+  ![SoundCloud Feature Diversity](results/SoundCloud/feature_diversity.png)
 
-Metapath2Vec-POC/  
-├── KuaiRec/  
-│   ├── big_matrix.csv  
-│   ├── small_matrix.csv  
-│   ├── social_network.csv  
-├── Metapath2Vec.ipynb  
-├── README.md  
+- **SoundCloud Recall@K and NDCG@K Trends**: Performance across K values (10, 20, 50, 100).
+  ![SoundCloud Metrics by K](results/SoundCloud/soundcloud_metrics_by_k.png)
+
+## Setup
+To replicate the environment used in this project, use the provided `environment.yaml` file:
+```bash
+conda env create -f environment.yaml
+conda activate mp2v4rec

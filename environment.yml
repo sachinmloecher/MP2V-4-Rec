@@ -1,4 +1,4 @@
-name: w2v-exp
+name: mp2v4rec-exp
 channels:
   - nodefaults
   - conda-forge
